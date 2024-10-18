@@ -1,10 +1,7 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
+const sequelize = new Sequelize('sqlite::memory:');
 
-const sequelize = new Sequelize(process.env.DATABASE_URL, {
-  dialect: 'postgres',
-  logging: false, // Set to console.log to see the raw SQL queries
-});
 
 async function testConnection() {
   try {
