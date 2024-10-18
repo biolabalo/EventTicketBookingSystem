@@ -1,7 +1,7 @@
-const express = require('express');
-const bodyParser = require('body-parser');
-const eventRoutes = require('./routes'); // Adjust the path as necessary
-const { sequelize, testConnection } = require('./db');
+import express from 'express';
+import bodyParser from 'body-parser';
+import eventRoutes from './routes/index.js'; 
+import { sequelize, testConnection } from './db.js';
 
 const app = express();
 
@@ -37,9 +37,8 @@ async function startServer() {
   }
 }
 
-// Only start the server if this file is run directly
-if (require.main === module) {
-  startServer();
-}
 
-module.exports = app;
+startServer();
+
+export default app;
+

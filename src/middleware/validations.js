@@ -1,4 +1,4 @@
-const { body, param, validationResult } = require('express-validator');
+import { body, param, validationResult } from 'express-validator';
 
 // Middleware to check for validation errors
 const validate = (req, res, next) => {
@@ -33,7 +33,8 @@ const statusValidation = [
   validate
 ];
 
-module.exports = {
+// Exporting the validation rules
+export {
   initializeValidation,
   bookValidation,
   cancelValidation,

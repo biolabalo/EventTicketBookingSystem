@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../db');
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../db.js';
 
 const Event = sequelize.define('Event', {
   id: {
@@ -45,10 +45,12 @@ const WaitingList = sequelize.define('WaitingList', {
   },
 });
 
+// Define relationships
 Event.hasMany(Booking);
 Booking.belongsTo(Event);
 
 Event.hasMany(WaitingList);
 WaitingList.belongsTo(Event);
 
-module.exports = { Event, Booking, WaitingList };
+// Export models
+export { Event, Booking, WaitingList };

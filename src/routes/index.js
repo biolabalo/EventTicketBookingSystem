@@ -1,17 +1,17 @@
-const express = require("express");
-const { Event, Booking, WaitingList } = require("../models");
-const { sequelize } = require("../db");
-const logger = require("../utils/logger");
-const {
+import express from 'express';
+import { Event, Booking, WaitingList } from '../models/index.js';
+import { sequelize } from '../db.js';
+import logger from '../utils/logger.js';
+import {
   initializeValidation,
   bookValidation,
   cancelValidation,
   statusValidation,
-} = require("../middleware/validations");
+} from '../middleware/validations.js';
+
 
 const router = express.Router();
 
-// Initialize a new event
 router.post("/initialize", initializeValidation, async (req, res) => {
   const { name, totalTickets } = req.body;
   try {
@@ -131,4 +131,5 @@ router.get("/status/:eventId", statusValidation, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
+
