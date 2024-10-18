@@ -93,14 +93,4 @@ The application uses database transactions and row-level locking to handle concu
 
 - Implement user registration and login system
 - Add rate limiting to prevent abuse
-- Implement more detailed event information and user profiles
-- Add support for multiple ticket types per event
-- Implement a notification system for users on the waiting list
 
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct, and the process for submitting pull requests.
-
-## License
-
-This project is licensed un
