@@ -1,7 +1,10 @@
 const request = require('supertest');
 const app = require('../src/app');
-const { Event, Booking, WaitingList } = require('../src/models');
 const { sequelize } = require('../src/db');
+
+beforeEach(async () => {
+    await sequelize.sync({ force: true });
+});
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });

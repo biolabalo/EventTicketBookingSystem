@@ -2,13 +2,13 @@ const express = require("express");
 const { Event, Booking, WaitingList } = require("../models");
 const { sequelize } = require("../db");
 const logger = require("../utils/logger");
-const { 
-    initializeValidation, 
-    bookValidation, 
-    cancelValidation, 
-    statusValidation 
-  } = require('../middleware/validations');
-  
+const {
+  initializeValidation,
+  bookValidation,
+  cancelValidation,
+  statusValidation,
+} = require("../middleware/validations");
+
 const router = express.Router();
 
 // Initialize a new event
@@ -41,17 +41,24 @@ router.post("/book", bookValidation, async (req, res) => {
     }
 
     if (event.availableTickets > 0) {
-      await Booking.create({ eventId, userId  }, { transaction: t });
+      await Booking.create({ eventId, userId }, { transaction: t });
       event.availableTickets -= 1;
       await event.save({ transaction: t });
       await t.commit();
-      logger.info(`Ticket booked`, { userId , eventId });
+      logger.info(`Ticket booked`, { userId, eventId });
       res.status(201).json({ message: "Ticket booked successfully" });
     } else {
-      await WaitingList.create({ eventId,  }, { transaction: t });
-      await t.commit();
-      logger.info(`Added to waiting list`, {  eventId, userId  });
-      res.status(202).json({ message: "Added to waiting list" });
+      const alreadyWaiting = await WaitingList.findOne({
+        where: { eventId, userId },
+      });
+      if (!alreadyWaiting) {
+        await WaitingList.create({ eventId, userId }, { transaction: t });
+        await t.commit();
+        logger.info(`Added to waiting list`, { eventId, userId });
+        return res.status(202).json({ message: "Added to waiting list" });
+      }
+
+      throw new Error("Already in waiting list");
     }
   } catch (error) {
     await t.rollback();
@@ -70,7 +77,8 @@ router.post("/cancel", cancelValidation, async (req, res) => {
       transaction: t,
     });
     if (!booking) {
-      throw new Error("Booking not found");
+      await t.rollback();
+      return res.status(400).json({ error: "Booking not found" });
     }
 
     await booking.destroy({ transaction: t });
@@ -81,6 +89,7 @@ router.post("/cancel", cancelValidation, async (req, res) => {
 
     const waitingUser = await WaitingList.findOne({
       where: { eventId },
+      order: [["createdAt", "ASC"]],
       transaction: t,
     });
     if (waitingUser) {
@@ -116,7 +125,6 @@ router.get("/status/:eventId", statusValidation, async (req, res) => {
       availableTickets: event.availableTickets,
       waitingListCount,
       bookingsCount,
-
     });
   } catch (error) {
     res.status(400).json({ error: error.message });
