@@ -2,11 +2,17 @@ const express = require("express");
 const { Event, Booking, WaitingList } = require("../models");
 const { sequelize } = require("../db");
 const logger = require("../utils/logger");
-
+const { 
+    initializeValidation, 
+    bookValidation, 
+    cancelValidation, 
+    statusValidation 
+  } = require('../middleware/validations');
+  
 const router = express.Router();
 
 // Initialize a new event
-router.post("/initialize", async (req, res) => {
+router.post("/initialize", initializeValidation, async (req, res) => {
   const { name, totalTickets } = req.body;
   try {
     const event = await Event.create({
@@ -24,7 +30,7 @@ router.post("/initialize", async (req, res) => {
 });
 
 // Book a ticket
-router.post("/book", async (req, res) => {
+router.post("/book", bookValidation, async (req, res) => {
   const { eventId, userId } = req.body;
   const t = await sequelize.transaction();
 
@@ -54,7 +60,7 @@ router.post("/book", async (req, res) => {
 });
 
 // Cancel a booking
-router.post("/cancel", async (req, res) => {
+router.post("/cancel", cancelValidation, async (req, res) => {
   const { eventId, userId } = req.body;
   const t = await sequelize.transaction();
 
@@ -96,7 +102,7 @@ router.post("/cancel", async (req, res) => {
 });
 
 // Get event status
-router.get("/status/:eventId", async (req, res) => {
+router.get("/status/:eventId", statusValidation, async (req, res) => {
   const { eventId } = req.params;
   try {
     const event = await Event.findByPk(eventId);

@@ -1,14 +1,15 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 const sequelize = new Sequelize('sqlite::memory:');
+const logger = require("./utils/logger");
 
 
 async function testConnection() {
   try {
     await sequelize.authenticate();
-    console.log('Connection to the database has been established successfully.');
+    logger.info('Connection to the database has been established successfully.')
   } catch (error) {
-    console.error('Unable to connect to the database:', error);
+    logger.error('Unable to connect to the database:', error)
   }
 }
 
