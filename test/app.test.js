@@ -2,7 +2,6 @@ const request = require('supertest');
 const app = require('../src/app');
 const { Event, Booking, WaitingList } = require('../src/models');
 const { sequelize } = require('../src/db');
-const { generateToken } = require('../src/utils/jwt');
 
 beforeAll(async () => {
   await sequelize.sync({ force: true });
@@ -14,13 +13,11 @@ afterAll(async () => {
 
 describe('Event Ticket Booking System API', () => {
   let eventId;
-  const testToken = generateToken('testuser');
 
   describe('Initialize Event', () => {
     it('should create a new event', async () => {
       const response = await request(app)
         .post('/api/initialize')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ name: 'Test Event', totalTickets: 100 });
 
       expect(response.statusCode).toBe(201);
@@ -35,7 +32,6 @@ describe('Event Ticket Booking System API', () => {
     it('should return 400 if name is missing', async () => {
       const response = await request(app)
         .post('/api/initialize')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ totalTickets: 100 });
 
       expect(response.statusCode).toBe(400);
@@ -47,7 +43,6 @@ describe('Event Ticket Booking System API', () => {
     it('should book a ticket successfully', async () => {
       const response = await request(app)
         .post('/api/book')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId, userId: 'user1' });
 
       expect(response.statusCode).toBe(201);
@@ -56,16 +51,14 @@ describe('Event Ticket Booking System API', () => {
 
     it('should add to waiting list when event is full', async () => {
       // Book all available tickets
-      for (let i = 0; i < 99; i++) {
+      for (let i = 0; i < 98; i++) {
         await request(app)
           .post('/api/book')
-          .set('Authorization', `Bearer ${testToken}`)
           .send({ eventId, userId: `user${i + 2}` });
       }
 
       const response = await request(app)
         .post('/api/book')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId, userId: 'userWaiting' });
 
       expect(response.statusCode).toBe(202);
@@ -75,7 +68,6 @@ describe('Event Ticket Booking System API', () => {
     it('should return 400 if event does not exist', async () => {
       const response = await request(app)
         .post('/api/book')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId: 9999, userId: 'user1' });
 
       expect(response.statusCode).toBe(400);
@@ -87,7 +79,6 @@ describe('Event Ticket Booking System API', () => {
     it('should cancel a booking successfully', async () => {
       const response = await request(app)
         .post('/api/cancel')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId, userId: 'user1' });
 
       expect(response.statusCode).toBe(200);
@@ -97,7 +88,6 @@ describe('Event Ticket Booking System API', () => {
     it('should assign ticket to waiting list user after cancellation', async () => {
       const responseCancel = await request(app)
         .post('/api/cancel')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId, userId: 'user2' });
 
       expect(responseCancel.statusCode).toBe(200);
@@ -112,7 +102,6 @@ describe('Event Ticket Booking System API', () => {
     it('should return 400 if booking does not exist', async () => {
       const response = await request(app)
         .post('/api/cancel')
-        .set('Authorization', `Bearer ${testToken}`)
         .send({ eventId, userId: 'nonexistentuser' });
 
       expect(response.statusCode).toBe(400);

@@ -41,16 +41,16 @@ router.post("/book", bookValidation, async (req, res) => {
     }
 
     if (event.availableTickets > 0) {
-      await Booking.create({ eventId,  }, { transaction: t });
+      await Booking.create({ eventId, userId  }, { transaction: t });
       event.availableTickets -= 1;
       await event.save({ transaction: t });
       await t.commit();
-      logger.info(`Ticket booked`, {  eventId });
+      logger.info(`Ticket booked`, { userId , eventId });
       res.status(201).json({ message: "Ticket booked successfully" });
     } else {
       await WaitingList.create({ eventId,  }, { transaction: t });
       await t.commit();
-      logger.info(`Added to waiting list`, {  eventId });
+      logger.info(`Added to waiting list`, {  eventId, userId  });
       res.status(202).json({ message: "Added to waiting list" });
     }
   } catch (error) {
@@ -110,9 +110,13 @@ router.get("/status/:eventId", statusValidation, async (req, res) => {
       throw new Error("Event not found");
     }
     const waitingListCount = await WaitingList.count({ where: { eventId } });
+    const bookingsCount = await Booking.count({ where: { eventId } });
+
     res.status(200).json({
       availableTickets: event.availableTickets,
       waitingListCount,
+      bookingsCount,
+
     });
   } catch (error) {
     res.status(400).json({ error: error.message });

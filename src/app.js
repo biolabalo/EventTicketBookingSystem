@@ -1,15 +1,21 @@
 const express = require('express');
+const bodyParser = require('body-parser');
+const eventRoutes = require('./routes'); // Adjust the path as necessary
 const { sequelize, testConnection } = require('./db');
-const { Event, Booking, WaitingList } = require('./models');
 
 const app = express();
 
 app.use(express.json());
+app.use(bodyParser.json());
+
 
 // Basic route for testing
 app.get('/', (req, res) => {
   res.json({ message: 'Event Ticket Booking System API' });
 });
+
+app.use('/api', eventRoutes);
+
 
 // Error handling middleware
 app.use((err, req, res, next) => {
