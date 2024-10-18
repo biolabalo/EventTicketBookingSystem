@@ -15,18 +15,13 @@ This is a Node.js application for an event ticket booking system, providing a RE
    npm install
    ```
 
-3. Set up your PostgreSQL database and update the `.env` file with your database URL and JWT secret:
-   ```
-   DATABASE_URL=postgresql://username:password@localhost:5432/database_name
-   JWT_SECRET=your-secret-key
-   ```
 
-4. Run database migrations:
+3. Run database migrations:
    ```
    npx sequelize-cli db:migrate
    ```
 
-5. Start the server:
+4. Start the server:
    ```
    npm start
    ```
@@ -44,32 +39,106 @@ To run the test suite:
 npm test
 ```
 
-## API Endpoints
+# Event Ticket Booking System API Documentation
 
-All endpoints except `/api/status/:eventId` require authentication using a JWT token in the Authorization header.
+## Base URL
+`http://localhost:3000/api`
 
-- `POST /api/initialize`: Initialize a new event
-  - Request body: `{ "name": "Event Name", "totalTickets": 100 }`
-  - Response: Created event object
+## Endpoints
 
-- `POST /api/book`: Book a ticket
-  - Request body: `{ "eventId": 1 }`
-  - Response: Booking confirmation or waiting list addition
+### 1. Initialize Event
+- **URL:** `/initialize`
+- **Method:** `POST`
+- **Auth required:** Yes
+- **Body:**
+  ```json
+  {
+    "name": "Summer Music Festival",
+    "totalTickets": 1000
+  }
+  ```
+- **Success Response:**
+  - **Code:** 201
+  - **Content:** 
+    ```json
+    {
+      "id": 1,
+      "name": "Summer Music Festival",
+      "totalTickets": 1000,
+      "availableTickets": 1000
+    }
+    ```
+- **Error Response:**
+  - **Code:** 400
+  - **Content:** `{ "error": "Event name is required" }`
 
-- `POST /api/cancel`: Cancel a booking
-  - Request body: `{ "eventId": 1 }`
-  - Response: Cancellation confirmation
+### 2. Book Ticket
+- **URL:** `/book`
+- **Method:** `POST`
+- **Auth required:** Yes
+- **Body:**
+  ```json
+  {
+    "eventId": 1,
+    "userId": "user123"
+  }
+  ```
+- **Success Response:**
+  - **Code:** 201
+  - **Content:** `{ "message": "Ticket booked successfully" }`
+- **Alternative Response:**
+  - **Code:** 202
+  - **Content:** `{ "message": "Added to waiting list" }`
+- **Error Response:**
+  - **Code:** 400
+  - **Content:** `{ "error": "Event not found" }`
 
-- `GET /api/status/:eventId`: Get event status (public)
-  - Response: `{ "availableTickets": 50, "waitingListCount": 10 }`
+### 3. Cancel Booking
+- **URL:** `/cancel`
+- **Method:** `POST`
+- **Auth required:** Yes
+- **Body:**
+  ```json
+  {
+    "eventId": 1,
+    "userId": "user123"
+  }
+  ```
+- **Success Response:**
+  - **Code:** 200
+  - **Content:** `{ "message": "Booking cancelled successfully" }`
+- **Error Response:**
+  - **Code:** 400
+  - **Content:** `{ "error": "Booking not found" }`
 
-## Authentication
+### 4. Get Event Status
+- **URL:** `/status/:eventId`
+- **Method:** `GET`
+- **Auth required:** No
+- **URL Params:** `eventId=[integer]`
+- **Success Response:**
+  - **Code:** 200
+  - **Content:** 
+    ```json
+    {
+      "availableTickets": 950,
+      "waitingListCount": 0
+    }
+    ```
+- **Error Response:**
+  - **Code:** 400
+  - **Content:** `{ "error": "Event not found" }`
 
-To authenticate requests, include a JWT token in the Authorization header:
+## Error Responses
+All endpoints may return the following error responses:
+- **Code:** 400
+- **Content:** `{ "errors": [{ "msg": "Error message" }] }`
 
-```
-Authorization: Bearer <your-jwt-token>
-```
+- **Code:** 401
+- **Content:** `{ "error": "Authentication required" }`
+
+- **Code:** 500
+- **Content:** `{ "error": "Internal server error" }`
 
 To generate a token for testing, you can use the `generateToken` function in `src/utils/jwt.js`.
 
